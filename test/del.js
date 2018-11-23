@@ -96,7 +96,7 @@
 
   });
 
-  describe ( 'del with wilcard and ignore', function () {
+  describe ( 'del with wilcard and ignore string', function () {
 
     var error, deletions;
 
@@ -137,6 +137,51 @@
 
     it ( 'should be a 5', function () {
       deletions.should.be.eql(5);
+    });
+
+  });
+
+  describe ( 'del with wilcard and ignore array', function () {
+
+    var error, deletions;
+
+    before(function (done) {
+
+      var parallel = [0, 1, 2, 3 ,4, 5].map(function (num) {
+
+        return function (done) {
+          cache.add('test-to-del.' + this.num, '-', done);
+        }.bind({ num: num });
+
+      });
+
+      require('async').series(parallel, function (error) {
+        done(error);
+      });
+    });
+
+    it ( 'should be a function', function () {
+      cache.del.should.be.a.Function;
+    });
+
+    it ( 'should callback', function (done) {
+      cache.del('test-to-del.*', function ($error, $deletions) {
+        error = $error;
+        deletions = $deletions;
+        done();
+      }, ['test-to-del.2', 'test-to-del.3'] );
+    });
+
+    it ( 'should not have error', function () {
+      should(error).be.null;
+    });
+
+    it ( 'should be a number', function () {
+      deletions.should.be.a.Number;
+    });
+
+    it ( 'should be a 4', function () {
+      deletions.should.be.eql(4);
     });
 
   });
